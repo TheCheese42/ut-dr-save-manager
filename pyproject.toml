@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "UT-DR-Save-Manager"
+version = "0.7.0"
+authors = [{ name = "Dominik Reinartz", email = "dominik.reinartz@proton.me" }]
+description = "Graphical Save File Manager for Undertale and Deltarune."
+readme = "README.md"
+requires-python = ">=3.12"
+keywords = ["undertale", "deltarune", "save-manager", "pyqt6", "gui"]
+license = { text = "MIT" }
+dependencies = ["PyQt6>=6.9.1"]
+
+[project.optional-dependencies]
+dev = [
+    "qt6-tools>=6.5.0.1.3",
+    "nuitka>=2.7.10",
+    "flake8>=7.3.0",
+    "mypy>=1.16.1",
+    "isort>=6.0.1",
+]
+
+[project.scripts]
+udsm = "udsm.__main__:main"
+
+[tool.mypy]
+files = ["udsm/"]
+exclude = ["udsm/icons/", "udsm/ui/"]
+strict = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+follow_imports = "skip"
