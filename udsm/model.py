@@ -117,6 +117,26 @@ def open_file(path: str | Path) -> None:
     thread.start()
 
 
+def open_url(url: str) -> None:
+    thread = Thread(target=_open_url_threaded, args=(url,))
+    thread.start()
+
+
+def _open_url_threaded(url: str) -> None:
+    try:
+        webbrowser.WindowsDefault().open(url)  # type: ignore[attr-defined]
+    except Exception:
+        system = platform.system()
+        if system == "Windows":
+            getoutput(
+                f"start {url}"
+            )
+        else:
+            getoutput(
+                f"open {url}"
+            )
+
+
 def open_backup_folder() -> None:
     open_file(BACKUP_PATH)
 
