@@ -1,4 +1,5 @@
 import sys
+from functools import partial
 from pathlib import Path
 from typing import Any, Literal
 
@@ -17,6 +18,9 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QDragEnterEvent, QDropEvent
 from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,
                              QMainWindow, QMessageBox, QWidget)
+
+
+type Game = Literal["undertale", "deltarune"]
 
 
 def show_question(parent: QWidget, title: str, desc: str) -> int:
@@ -96,25 +100,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         self.applyDeltarune.clicked.connect(self.apply_deltarune)
         self.deleteUndertale.clicked.connect(self.delete_undertale)
         self.deleteDeltarune.clicked.connect(self.delete_deltarune)
-        self.addUndertaleToSaves.clicked.connect(self.add_undertale_to_saves)
-        self.addDeltaruneToSaves.clicked.connect(self.add_deltarune_to_saves)
+        self.addUndertaleToSaves.clicked.connect(
+            partial(self.add_to_saves, "undertale")
+        )
+        self.addDeltaruneToSaves.clicked.connect(
+            partial(self.add_to_saves, "deltarune")
+        )
         self.undertaleSavesList.itemChanged.connect(
-            self.undertale_item_renamed
+            partial(self.item_renamed, "undertale")
         )
         self.deltaruneSavesList.itemChanged.connect(
-            self.deltarune_item_renamed
+            partial(self.item_renamed, "deltarune")
         )
         self.launchUTSteam.clicked.connect(model.launch_steam_ut)
         self.launchDRSteam.clicked.connect(model.launch_steam_dr)
         self.launchUTFile.clicked.connect(
-            lambda: model.launch_file(get_config_value("undertale_file_path"))
+            partial(self.launch_file, "undertale")
         )
         self.launchDRFile.clicked.connect(
-            lambda: model.launch_file(get_config_value("deltarune_file_path"))
+            partial(self.launch_file, "deltarune")
         )
 
-    def undertale_item_renamed(self, item: QListWidgetItem) -> None:
-        prev_name = reverse_lookup(self.saves_to_items_ut, item)
+    def launch_file(self, game: Game) -> None:
+        path = get_config_value(f"{game}_file_path")
+        game_display = game if game != "undertale" else game.upper()
+        if not path:
+            show_error(
+                self, f"No {game_display} file path set",
+                f"Please configure the {game_display} file path first."
+            )
+            return
+        model.launch_file(path)
+
+    def item_renamed(self, game: Game, item: QListWidgetItem) -> None:
+        if game == "undertale":
+            prev_name = reverse_lookup(self.saves_to_items_ut, item)
+        else:
+            prev_name = reverse_lookup(self.saves_to_items_dr, item)
         if prev_name is None:
             return
         new_name = item.text().strip()
@@ -125,29 +147,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
             item.setText(prev_name)
         else:
             item.setText(new_name)
-            model.rename_undertale_save(prev_name, new_name)
+            if game == "undertale":
+                model.rename_undertale_save(prev_name, new_name)
+            else:
+                model.rename_deltarune_save(prev_name, new_name)
         self.updateUi()
 
-    def deltarune_item_renamed(self, item: QListWidgetItem) -> None:
-        prev_name = reverse_lookup(self.saves_to_items_dr, item)
-        if prev_name is None:
+    def add_to_saves(self, game: Game) -> None:
+        path = get_config_value(f"{game}_save_path")
+        game_display = game if game != "undertale" else game.upper()
+        if not path:
+            show_error(
+                self, f"No {game_display} save path set",
+                f"Please configure the {game_display} save path first."
+            )
             return
-        new_name = item.text().strip()
-        if not new_name or new_name.lower() in (
-            *map(str.lower, model.get_undertale_saves()),
-            *map(str.lower, model.get_deltarune_saves()),
-        ):
-            item.setText(prev_name)
-        else:
-            item.setText(new_name)
-            model.rename_deltarune_save(prev_name, new_name)
-        self.updateUi()
-
-    def add_undertale_to_saves(self) -> None:
-        self.create_save(get_config_value("undertale_save_path"), "undertale")
-
-    def add_deltarune_to_saves(self) -> None:
-        self.create_save(get_config_value("deltarune_save_path"), "deltarune")
+        self.create_save(path, game)
 
     def dragEnterEvent(self, a0: QDragEnterEvent | None) -> None:
         if a0 is None:
@@ -175,7 +190,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
 
     def create_save(
         self, path: str | Path,
-        game: Literal["undertale", "deltarune"] | None = None,
+        game: Game | None = None,
     ) -> None:
         create = CreateDialog(self, game)
         if create.exec() == QDialog.DialogCode.Accepted:
@@ -203,6 +218,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         model.copy_deltarune_save(selected, deltarune_save_path)
 
     def delete_undertale(self) -> None:
+        # Nooooooooo
         try:
             selected = self.undertaleSavesList.selectedItems()[0].text()
         except IndexError:
@@ -215,6 +231,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
             self.updateUi()
 
     def delete_deltarune(self) -> None:
+        # Nooooooooo
         try:
             selected = self.deltaruneSavesList.selectedItems()[0].text()
         except IndexError:
@@ -230,7 +247,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
 class CreateDialog(QDialog, Ui_Create):  # type: ignore[misc]
     def __init__(
         self, parent: QWidget | None = None,
-        game: Literal["undertale", "deltarune"] | None = None,
+        game: Game | None = None,
     ) -> None:
         super().__init__(parent)
         self.game = game
@@ -243,6 +260,9 @@ class CreateDialog(QDialog, Ui_Create):  # type: ignore[misc]
             self.undertaleRadio.setChecked(True)
         elif self.game == "deltarune":
             self.deltaruneRadio.setChecked(True)
+        if self.game:
+            self.undertaleRadio.setEnabled(False)
+            self.deltaruneRadio.setEnabled(False)
 
     def connectSignalsSlots(self) -> None:
         self.buttonBox.accepted.connect(self.accept_requested)
