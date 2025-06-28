@@ -1,38 +1,76 @@
 import sys
-from collections.abc import Callable
 from functools import partial
 from pathlib import Path
+from platform import system
 from typing import Any, Literal
 
-try:
-    from . import model  # type: ignore
-    from .config import get_config_value, init_config, set_config_value
-    from .ui.about_ui import Ui_About
-    from .ui.create_ui import Ui_Create
-    # XXX from .ui.licenses_ui import Ui_Licenses
-    from .ui.window_ui import Ui_MainWindow
-    from .version import version_string
-except ImportError:
-    import model
-    from config import get_config_value, set_config_value, init_config
-    from ui.create_ui import Ui_Create
-    from ui.window_ui import Ui_MainWindow
-
-    # XXX from ui.licenses_ui import Ui_Licenses
-    from ui.about_ui import Ui_About
-    from version import version_string
-
 import pyqt_utils
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QDragEnterEvent, QDropEvent
-from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,
-                             QMainWindow, QMessageBox, QWidget)
 
 pyqt_utils.init_app("ut-dr-save-manager", __file__)
 
-from pyqt_utils import licenses
+try:
+    from . import model  # type: ignore
+    from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
+    from .ui.about_ui import Ui_About
+    from .ui.create_ui import Ui_Create
+    from .ui.window_ui import Ui_MainWindow
+except ImportError:
+    import model
+    from ui.create_ui import Ui_Create
+    from ui.window_ui import Ui_MainWindow
+    from paths import BACKUP_PATH, UNDERTALE_SAVES_PATH, DELTARUNE_SAVES_PATH
+    from ui.about_ui import Ui_About
+
+from PyQt6.QtCore import Qt, QTimer  # noqa
+from PyQt6.QtGui import QDragEnterEvent, QDropEvent  # noqa
+from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,  # noqa
+                             QMainWindow, QMessageBox, QWidget)
+from pyqt_utils import licenses  # noqa
+from pyqt_utils.config import (get_config_value, init_config,  # noqa
+                               set_config_value)
+from pyqt_utils.version import version_string  # noqa
 
 type Game = Literal["undertale", "deltarune"]
+
+
+def get_default_undertale_save_path() -> str:
+    match system():
+        case "Linux":
+            return str(Path.home() / ".config" / "UNDERTALE")
+        case "Windows":
+            return str(Path.home() / "AppData" / "Local" / "UNDERTALE")
+        case "Darwin":
+            return str(
+                Path.home() / "Library" / "Application Support" /
+                "com.tobyfox.undertale"
+            )
+        case _:
+            return ""
+
+
+def get_default_deltarune_save_path() -> str:
+    match system():
+        case "Linux":
+            return ""
+        case "Windows":
+            return str(Path.home() / "AppData" / "Local" / "DELTARUNE")
+        case "Darwin":
+            return str(
+                Path.home() / "Library" / "Application Support" /
+                "com.tobyfox.deltarune"
+            )
+        case _:
+            return ""
+
+
+DEFAULT_CONFIG: dict[str, str | int | float | bool | list[str]] = {
+    "undertale_file_path": "",
+    "deltarune_file_path": "",
+    "undertale_save_path": get_default_undertale_save_path(),
+    "deltarune_save_path": get_default_deltarune_save_path(),
+    "deltarune_saves": [],
+    "undertale_saves": [],
+}
 
 
 def show_question(parent: QWidget, title: str, desc: str) -> int:
@@ -405,7 +443,11 @@ def reverse_lookup(d: dict[Any, Any], value: Any) -> Any:
 
 
 def main() -> None:
-    init_config()
+    init_config(DEFAULT_CONFIG)
+    UNDERTALE_SAVES_PATH.mkdir(parents=True, exist_ok=True)
+    DELTARUNE_SAVES_PATH.mkdir(parents=True, exist_ok=True)
+    BACKUP_PATH.mkdir(parents=True, exist_ok=True)
+
     app = QApplication(sys.argv)
     app.setApplicationName("ut-dr-save-manager")
     app.setApplicationDisplayName("SaveManager For UNDERTALE/deltarune")
