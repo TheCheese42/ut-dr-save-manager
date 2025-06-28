@@ -22,13 +22,14 @@ except ImportError:
     from ui.about_ui import Ui_About
 
 from PyQt6.QtCore import Qt, QTimer  # noqa
-from PyQt6.QtGui import QDragEnterEvent, QDropEvent  # noqa
+from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent  # noqa
 from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,  # noqa
-                             QMainWindow, QMessageBox, QWidget)
+                             QMainWindow, QMenu, QMessageBox, QWidget)
 from pyqt_utils import licenses  # noqa
 from pyqt_utils.config import (get_config_value, init_config,  # noqa
                                set_config_value)
-from pyqt_utils.utils import open_url
+from pyqt_utils.styles import find_styles  # noqa
+from pyqt_utils.utils import open_url  # noqa
 from pyqt_utils.version import version_string  # noqa
 
 type Game = Literal["undertale", "deltarune"]
@@ -65,6 +66,7 @@ def get_default_deltarune_save_path() -> str:
 
 
 DEFAULT_CONFIG: dict[str, str | int | float | bool | list[str]] = {
+    "theme": "",
     "undertale_file_path": "",
     "deltarune_file_path": "",
     "undertale_save_path": get_default_undertale_save_path(),
@@ -138,6 +140,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
             self.saves_to_items_dr[save] = item
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
             self.deltaruneSavesList.addItem(item)
+
+        # Themes
+        self.all_theme_actions: list[QAction] = []
+        action: QAction = self.menuTheme.addAction("Default")  # type: ignore[assignment]  # noqa
+        self.all_theme_actions.append(action)
+        action.setCheckable(True)
+        action.triggered.connect(partial(self.set_style, "", ""))
+        configured_theme = get_config_value("theme")
+        if not configured_theme:
+            self.set_style("", "")
+        for group, styles in find_styles().items():
+            menu: QMenu = self.menuTheme.addMenu(group)  # type: ignore[assignment]  # noqa
+            for style in styles:
+                action: QAction = menu.addAction(style.name)  # type: ignore[assignment]  # noqa
+                self.all_theme_actions.append(action)
+                action.setCheckable(True)
+                action.triggered.connect(
+                    partial(self.set_style, style.name, style.stylesheet)
+                )
+                if style.name == configured_theme:
+                    self.set_style(style.name, style.stylesheet)
+
+    def set_style(self, name: str, stylesheet: str) -> None:
+        self.setStyleSheet(stylesheet)
+        set_config_value("theme", name)
+        for action in self.all_theme_actions:
+            if action.text() == name:
+                action.setChecked(True)
+            else:
+                action.setChecked(False)
+        if not name:
+            self.all_theme_actions[0].setChecked(True)
 
     def connectSignalsSlots(self) -> None:
         self.undertaleSavePath.textChanged.connect(

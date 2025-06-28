@@ -518,7 +518,7 @@ Not required if you choose to launch via Steam.</string>
      <x>0</x>
      <y>0</y>
      <width>828</width>
-     <height>30</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -554,7 +554,13 @@ Not required if you choose to launch via Steam.</string>
     <addaction name="actionHope"/>
     <addaction name="actionDream"/>
    </widget>
+   <widget class="QMenu" name="menuTheme">
+    <property name="title">
+     <string>Theme</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuTheme"/>
    <addaction name="menuPlaylists"/>
    <addaction name="menuHelp"/>
    <addaction name="menuHope"/>
