@@ -6,31 +6,42 @@ from typing import Any, Literal
 
 import pyqt_utils
 
-pyqt_utils.init_app("ut-dr-save-manager", __file__)
+if True:  # Makes flake8 shut up
+    pyqt_utils.init_app("ut-dr-save-manager", __file__)
+
+from . import model
+from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
+
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent
+from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,
+                             QMainWindow, QMenu, QMessageBox, QWidget)
+from pyqt_utils import licenses
+from pyqt_utils.config import (get_config_value, init_config, log,
+                               set_config_value)
+from pyqt_utils.styles import find_styles
+from pyqt_utils.utils import open_url
+from pyqt_utils.version import version_string
 
 try:
-    from . import model  # type: ignore
-    from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
     from .ui.about_ui import Ui_About
     from .ui.create_ui import Ui_Create
     from .ui.window_ui import Ui_MainWindow
 except ImportError:
-    import model
-    from ui.create_ui import Ui_Create
-    from ui.window_ui import Ui_MainWindow
-    from paths import BACKUP_PATH, UNDERTALE_SAVES_PATH, DELTARUNE_SAVES_PATH
-    from ui.about_ui import Ui_About
+    log(
+        "Failed to load UI. Did you forget to run the compile-ui script?",
+        "ERROR",
+    )
+    sys.exit(1)
 
-from PyQt6.QtCore import Qt, QTimer  # noqa
-from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent  # noqa
-from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,  # noqa
-                             QMainWindow, QMenu, QMessageBox, QWidget)
-from pyqt_utils import licenses  # noqa
-from pyqt_utils.config import (get_config_value, init_config,  # noqa
-                               set_config_value)
-from pyqt_utils.styles import find_styles  # noqa
-from pyqt_utils.utils import open_url  # noqa
-from pyqt_utils.version import version_string  # noqa
+try:
+    from .styles.Breeze import breeze_pyqt6 as _  # noqa
+except ImportError:
+    log(
+        "Failed to load breeze styles. Did you forget to run the "
+        "compile-styles script?"
+        "WARNING",
+    )
 
 type Game = Literal["undertale", "deltarune"]
 

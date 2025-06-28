@@ -1,3 +1,4 @@
 __pycache__/
 .vscode/
 udsm/ui/*.py
+udsm/styles/

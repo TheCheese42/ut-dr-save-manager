@@ -4,10 +4,7 @@ from pathlib import Path
 from subprocess import getoutput
 from threading import Thread
 
-try:
-    from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
-except ImportError:
-    from paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
+from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
 
 from pyqt_utils.utils import open_file
 
