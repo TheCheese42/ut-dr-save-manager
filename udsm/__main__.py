@@ -28,6 +28,7 @@ from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,  # noqa
 from pyqt_utils import licenses  # noqa
 from pyqt_utils.config import (get_config_value, init_config,  # noqa
                                set_config_value)
+from pyqt_utils.utils import open_url
 from pyqt_utils.version import version_string  # noqa
 
 type Game = Literal["undertale", "deltarune"]
@@ -380,42 +381,6 @@ class CreateDialog(QDialog, Ui_Create):  # type: ignore[misc]
             self.accept()
 
 
-# class Licenses(QDialog, Ui_Licenses):  # type: ignore[misc]
-#     def __init__(
-#         self, parent: QWidget, open_url_method: Callable[[str], None]
-#     ) -> None:
-#         super().__init__(parent)
-#         self.open_url = open_url_method
-#         self.names_urls_licenses: dict[str, tuple[str, str]] = {}
-#         self.setupUi(self)
-#         self.connectSignalsSlots()
-
-#     def setupUi(self, *args: Any, **kwargs: Any) -> None:
-#         super().setupUi(*args, **kwargs)
-#         for i in range(self.list.count()):
-#             item: QListWidgetItem = self.list.item(i)  # type: ignore[assignment]  # noqa
-#             # Don't question this practice
-#             license_text = item.toolTip()
-#             url = item.statusTip()
-#             item.setToolTip("{url} (double tap to open)".format(url=url))
-#             item.setStatusTip("")
-#             self.names_urls_licenses[item.text()] = (url, license_text)
-
-#     def connectSignalsSlots(self) -> None:
-#         self.list.itemSelectionChanged.connect(self.show_license)
-#         self.list.itemDoubleClicked.connect(self.double_clicked)
-
-#     def show_license(self) -> None:
-#         try:
-#             selected = self.list.selectedItems()[0]
-#         except IndexError:
-#             return
-#         self.browser.setText(self.names_urls_licenses[selected.text()][1])
-
-#     def double_clicked(self, item: QListWidgetItem) -> None:
-#         self.open_url(self.names_urls_licenses[item.text()][0])
-
-
 class About(QDialog, Ui_About):  # type: ignore[misc]
     def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
@@ -429,7 +394,7 @@ class About(QDialog, Ui_About):  # type: ignore[misc]
     def connectSignalsSlots(self) -> None:
         self.openGithubBtn.clicked.connect(
             partial(
-                model.open_url,
+                open_url,
                 "https://github.com/TheCheese42/ut-dr-save-manager"
             )
         )

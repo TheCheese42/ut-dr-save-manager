@@ -1,6 +1,4 @@
-import platform
 import shutil
-import webbrowser
 from datetime import datetime
 from pathlib import Path
 from subprocess import getoutput
@@ -10,6 +8,8 @@ try:
     from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
 except ImportError:
     from paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
+
+from pyqt_utils.utils import open_file
 
 
 def get_undertale_saves() -> list[str]:
@@ -94,49 +94,6 @@ def rename_deltarune_save(name: str, new_name: str) -> None:
         pass
 
 
-def _open_file_threaded(path: str | Path) -> None:
-    try:
-        # Webbrowser module can well be used to open regular file as well.
-        # The system will use the default application, for the file type,
-        # not necessarily the webbrowser.
-        webbrowser.WindowsDefault().open(str(path))  # type: ignore[attr-defined]  # noqa
-    except Exception:
-        system = platform.system()
-        if system == "Windows":
-            getoutput(f"start {path}")
-        else:
-            getoutput(f"open {path}")
-
-
-def _start_file_threaded(path: str | Path) -> None:
-    getoutput(str(path))
-
-
-def open_file(path: str | Path) -> None:
-    thread = Thread(target=_open_file_threaded, args=(path,))
-    thread.start()
-
-
-def open_url(url: str) -> None:
-    thread = Thread(target=_open_url_threaded, args=(url,))
-    thread.start()
-
-
-def _open_url_threaded(url: str) -> None:
-    try:
-        webbrowser.WindowsDefault().open(url)  # type: ignore[attr-defined]
-    except Exception:
-        system = platform.system()
-        if system == "Windows":
-            getoutput(
-                f"start {url}"
-            )
-        else:
-            getoutput(
-                f"open {url}"
-            )
-
-
 def open_backup_folder() -> None:
     open_file(BACKUP_PATH)
 
@@ -147,6 +104,10 @@ def launch_steam_ut() -> None:
 
 def launch_steam_dr() -> None:
     getoutput("steam steam://rungameid/1671210")
+
+
+def _start_file_threaded(path: str | Path) -> None:
+    getoutput(str(path))
 
 
 def launch_file(path: str | Path) -> None:
