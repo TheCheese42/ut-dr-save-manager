@@ -9,7 +9,7 @@ try:
     from .config import get_config_value, init_config, set_config_value
     from .ui.about_ui import Ui_About
     from .ui.create_ui import Ui_Create
-    from .ui.licenses_ui import Ui_Licenses
+    # XXX from .ui.licenses_ui import Ui_Licenses
     from .ui.window_ui import Ui_MainWindow
     from .version import version_string
 except ImportError:
@@ -17,14 +17,20 @@ except ImportError:
     from config import get_config_value, set_config_value, init_config
     from ui.create_ui import Ui_Create
     from ui.window_ui import Ui_MainWindow
-    from ui.licenses_ui import Ui_Licenses
+
+    # XXX from ui.licenses_ui import Ui_Licenses
     from ui.about_ui import Ui_About
     from version import version_string
 
+import pyqt_utils
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QDragEnterEvent, QDropEvent
 from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,
                              QMainWindow, QMessageBox, QWidget)
+
+pyqt_utils.init_app("ut-dr-save-manager", __file__)
+
+from pyqt_utils import licenses
 
 type Game = Literal["undertale", "deltarune"]
 
@@ -151,14 +157,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         self.actionAbout.triggered.connect(self.open_about)
 
     def open_playlists(self) -> None:
-        pass  # TODO
+        pass  # TODO this and pre-made SAVES
 
     def open_about(self) -> None:
         dialog = About(self)
         dialog.exec()
 
     def open_licenses(self) -> None:
-        dialog = Licenses(self, model.open_url)
+        dialog = licenses.LicenseViewer(self)
+        dialog.licenses.append(licenses.License(
+            "???", "Glory to the dog.", "https://toby.fangamer.com/"
+        ))
+        dialog.setup_licenses()
         dialog.exec()
 
     def launch_file(self, game: Game) -> None:
@@ -198,8 +208,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         game_display = game if game != "undertale" else game.upper()
         if not path:
             show_error(
-                self, f"No {game_display} save path set",
-                f"Please configure the {game_display} save path first."
+                self,
+                f"No {game_display} save path set",
+                f"Please configure the {game_display} save path first.",
             )
             return
         self.create_save(path, game)
@@ -331,40 +342,40 @@ class CreateDialog(QDialog, Ui_Create):  # type: ignore[misc]
             self.accept()
 
 
-class Licenses(QDialog, Ui_Licenses):  # type: ignore[misc]
-    def __init__(
-        self, parent: QWidget, open_url_method: Callable[[str], None]
-    ) -> None:
-        super().__init__(parent)
-        self.open_url = open_url_method
-        self.names_urls_licenses: dict[str, tuple[str, str]] = {}
-        self.setupUi(self)
-        self.connectSignalsSlots()
+# class Licenses(QDialog, Ui_Licenses):  # type: ignore[misc]
+#     def __init__(
+#         self, parent: QWidget, open_url_method: Callable[[str], None]
+#     ) -> None:
+#         super().__init__(parent)
+#         self.open_url = open_url_method
+#         self.names_urls_licenses: dict[str, tuple[str, str]] = {}
+#         self.setupUi(self)
+#         self.connectSignalsSlots()
 
-    def setupUi(self, *args: Any, **kwargs: Any) -> None:
-        super().setupUi(*args, **kwargs)
-        for i in range(self.list.count()):
-            item: QListWidgetItem = self.list.item(i)  # type: ignore[assignment]  # noqa
-            # Don't question this practice
-            license_text = item.toolTip()
-            url = item.statusTip()
-            item.setToolTip("{url} (double tap to open)".format(url=url))
-            item.setStatusTip("")
-            self.names_urls_licenses[item.text()] = (url, license_text)
+#     def setupUi(self, *args: Any, **kwargs: Any) -> None:
+#         super().setupUi(*args, **kwargs)
+#         for i in range(self.list.count()):
+#             item: QListWidgetItem = self.list.item(i)  # type: ignore[assignment]  # noqa
+#             # Don't question this practice
+#             license_text = item.toolTip()
+#             url = item.statusTip()
+#             item.setToolTip("{url} (double tap to open)".format(url=url))
+#             item.setStatusTip("")
+#             self.names_urls_licenses[item.text()] = (url, license_text)
 
-    def connectSignalsSlots(self) -> None:
-        self.list.itemSelectionChanged.connect(self.show_license)
-        self.list.itemDoubleClicked.connect(self.double_clicked)
+#     def connectSignalsSlots(self) -> None:
+#         self.list.itemSelectionChanged.connect(self.show_license)
+#         self.list.itemDoubleClicked.connect(self.double_clicked)
 
-    def show_license(self) -> None:
-        try:
-            selected = self.list.selectedItems()[0]
-        except IndexError:
-            return
-        self.browser.setText(self.names_urls_licenses[selected.text()][1])
+#     def show_license(self) -> None:
+#         try:
+#             selected = self.list.selectedItems()[0]
+#         except IndexError:
+#             return
+#         self.browser.setText(self.names_urls_licenses[selected.text()][1])
 
-    def double_clicked(self, item: QListWidgetItem) -> None:
-        self.open_url(self.names_urls_licenses[item.text()][0])
+#     def double_clicked(self, item: QListWidgetItem) -> None:
+#         self.open_url(self.names_urls_licenses[item.text()][0])
 
 
 class About(QDialog, Ui_About):  # type: ignore[misc]

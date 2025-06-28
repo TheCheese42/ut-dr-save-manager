@@ -527,7 +527,7 @@ Not required if you choose to launch via Steam.</string>
     </property>
     <widget class="QMenu" name="menuEnable_premade_SAVES">
      <property name="title">
-      <string>Enable premade SAVES</string>
+      <string>Enable pre-made SAVES</string>
      </property>
     </widget>
     <addaction name="menuEnable_premade_SAVES"/>
