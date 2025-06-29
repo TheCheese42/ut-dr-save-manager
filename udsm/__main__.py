@@ -9,19 +9,20 @@ import pyqt_utils
 if True:  # Makes flake8 shut up
     pyqt_utils.init_app("ut-dr-save-manager", __file__)
 
-from . import model
-from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
-
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent
-from PyQt6.QtWidgets import (QApplication, QDialog, QListWidgetItem,
-                             QMainWindow, QMenu, QMessageBox, QWidget)
+from PyQt6.QtWidgets import (QApplication, QDialog, QFileDialog,
+                             QListWidgetItem, QMainWindow, QMenu, QMessageBox,
+                             QWidget)
 from pyqt_utils import licenses
 from pyqt_utils.config import (get_config_value, init_config, log,
                                set_config_value)
 from pyqt_utils.styles import find_styles
 from pyqt_utils.utils import open_url
 from pyqt_utils.version import version_string
+
+from . import model
+from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
 
 try:
     from .ui.about_ui import Ui_About
@@ -49,13 +50,19 @@ type Game = Literal["undertale", "deltarune"]
 def get_default_undertale_save_path() -> str:
     match system():
         case "Linux":
-            return str(Path.home() / ".config" / "UNDERTALE")
+            return str((
+                Path.home() / ".config" / "UNDERTALE"
+            ).absolute().resolve())
         case "Windows":
-            return str(Path.home() / "AppData" / "Local" / "UNDERTALE")
+            return str((
+                Path.home() / "AppData" / "Local" / "UNDERTALE"
+            ).absolute().resolve())
         case "Darwin":
             return str(
-                Path.home() / "Library" / "Application Support" /
-                "com.tobyfox.undertale"
+                (
+                    Path.home() / "Library" / "Application Support" /
+                    "com.tobyfox.undertale"
+                ).absolute().resolve()
             )
         case _:
             return ""
@@ -66,11 +73,15 @@ def get_default_deltarune_save_path() -> str:
         case "Linux":
             return ""
         case "Windows":
-            return str(Path.home() / "AppData" / "Local" / "DELTARUNE")
+            return str((
+                Path.home() / "AppData" / "Local" / "DELTARUNE"
+            ).absolute().resolve())
         case "Darwin":
             return str(
-                Path.home() / "Library" / "Application Support" /
-                "com.tobyfox.deltarune"
+                (
+                    Path.home() / "Library" / "Application Support" /
+                    "com.tobyfox.deltarune"
+                ).absolute().resolve()
             )
         case _:
             return ""
@@ -239,6 +250,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         self.actionOpen_Playlists.triggered.connect(self.open_playlists)
         self.actionView_Licenses.triggered.connect(self.open_licenses)
         self.actionAbout.triggered.connect(self.open_about)
+        self.actionImportUTSave.triggered.connect(
+            partial(self.import_save, "undertale")
+        )
+        self.actionImportDRSave.triggered.connect(
+            partial(self.import_save, "deltarune")
+        )
+
+    def import_save(self, game: Game) -> None:
+        folder = QFileDialog.getExistingDirectory(self, "Select SAVE Folder")
+        if folder:
+            self.create_save(folder, game)
 
     def open_playlists(self) -> None:
         pass  # TODO this and pre-made SAVES
@@ -341,16 +363,54 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
             selected = self.undertaleSavesList.selectedItems()[0].text()
         except IndexError:
             return
-        undertale_save_path = Path(get_config_value("undertale_save_path"))
+        undertale_save_path = Path(
+            cv := get_config_value("undertale_save_path")
+        )
+        if not cv:
+            show_error(
+                self, "No UNDERTALE SAVE path set",
+                "Please configure the UNDERTALE SAVE path first."
+            )
+            return
+        if not undertale_save_path.name.lower().endswith("undertale"):
+            show_error(
+                self, "You IDIOT!",
+                "Your UNDERTALE SAVE path does not end with 'undertale'. Are "
+                "you sure picked the right path?",
+            )
+            return
         model.copy_undertale_save(selected, undertale_save_path)
+        show_info(
+            self, "SAVE Applied",
+            f"Your UNDERTALE SAVE '{selected}' was applied."
+        )
 
     def apply_deltarune(self) -> None:
         try:
             selected = self.deltaruneSavesList.selectedItems()[0].text()
         except IndexError:
             return
-        deltarune_save_path = Path(get_config_value("deltarune_save_path"))
+        deltarune_save_path = Path(
+            cv := get_config_value("deltarune_save_path")
+        )
+        if not cv:
+            show_error(
+                self, "No deltarune SAVE path set",
+                "Please configure the deltarune SAVE path first."
+            )
+            return
+        if not deltarune_save_path.name.lower().endswith("deltarune"):
+            show_error(
+                self, "You IDIOT!",
+                "Your deltarune SAVE path does not end with 'deltarune'. Are "
+                "you sure picked the right path?",
+            )
+            return
         model.copy_deltarune_save(selected, deltarune_save_path)
+        show_info(
+            self, "SAVE Applied",
+            f"Your deltarune SAVE '{selected}' was applied."
+        )
 
     def delete_undertale(self) -> None:
         # Nooooooooo

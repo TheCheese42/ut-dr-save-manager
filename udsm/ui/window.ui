@@ -525,12 +525,14 @@ Not required if you choose to launch via Steam.</string>
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuEnable_premade_SAVES">
+    <widget class="QMenu" name="menuImportPremadSave">
      <property name="title">
-      <string>Enable pre-made SAVES</string>
+      <string>Enable pre-made SAVE</string>
      </property>
     </widget>
-    <addaction name="menuEnable_premade_SAVES"/>
+    <addaction name="actionImportUTSave"/>
+    <addaction name="actionImportDRSave"/>
+    <addaction name="menuImportPremadSave"/>
     <addaction name="separator"/>
     <addaction name="actionQuit_2"/>
    </widget>
@@ -560,8 +562,8 @@ Not required if you choose to launch via Steam.</string>
     </property>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuTheme"/>
    <addaction name="menuPlaylists"/>
+   <addaction name="menuTheme"/>
    <addaction name="menuHelp"/>
    <addaction name="menuHope"/>
   </widget>
@@ -615,6 +617,22 @@ Not required if you choose to launch via Steam.</string>
   <action name="actionSans">
    <property name="text">
     <string>Sans</string>
+   </property>
+  </action>
+  <action name="actionImportUTSave">
+   <property name="text">
+    <string>Import UNDERTALE SAVE</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Shift+U</string>
+   </property>
+  </action>
+  <action name="actionImportDRSave">
+   <property name="text">
+    <string>Import deltarune SAVE</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Shift+D</string>
    </property>
   </action>
  </widget>

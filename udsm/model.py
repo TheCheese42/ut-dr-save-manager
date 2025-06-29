@@ -26,19 +26,19 @@ def get_deltarune_saves() -> list[str]:
 def copy_undertale_save(name: str, save_path: Path | str) -> None:
     try:
         shutil.move(save_path, BACKUP_PATH / datetime.now().strftime(
-            "UNDERTALE_%Y-%m-%d_%H-%M-%S") / name)
-    except (FileExistsError, FileNotFoundError):
+            f"UNDERTALE_{name}_%Y-%m-%d_%H-%M-%S"))
+        shutil.copytree(UNDERTALE_SAVES_PATH / name, save_path)
+    except (FileExistsError, FileNotFoundError, shutil.Error):
         pass
-    shutil.copytree(UNDERTALE_SAVES_PATH / name, save_path)
 
 
 def copy_deltarune_save(name: str, save_path: Path | str) -> None:
     try:
         shutil.move(save_path, BACKUP_PATH / datetime.now().strftime(
-            "DELTARUNE_%Y-%m-%d_%H-%M-%S") / name)
-    except (FileExistsError, FileNotFoundError):
+            f"DELTARUNE_{name}_%Y-%m-%d_%H-%M-%S"))
+        shutil.copytree(DELTARUNE_SAVES_PATH / name, save_path)
+    except (FileExistsError, FileNotFoundError, shutil.Error):
         pass
-    shutil.copytree(DELTARUNE_SAVES_PATH / name, save_path)
 
 
 def create_undertale_save(name: str, path: Path | str) -> None:
