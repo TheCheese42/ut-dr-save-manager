@@ -4,9 +4,9 @@ from pathlib import Path
 from subprocess import getoutput
 from threading import Thread
 
-from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
-
 from pyqt_utils.utils import open_file
+
+from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
 
 
 def get_undertale_saves() -> list[str]:
