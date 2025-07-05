@@ -1,9 +1,11 @@
 import shutil
+import time
 from datetime import datetime
 from pathlib import Path
 from subprocess import getoutput
 from threading import Thread
 
+import psutil
 from pyqt_utils.utils import open_file
 
 from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
@@ -110,3 +112,13 @@ def _start_file_threaded(path: str | Path) -> None:
 def launch_file(path: str | Path) -> None:
     thread = Thread(target=_start_file_threaded, args=(path,))
     thread.start()
+
+
+def program_running(program: str) -> bool:
+    try:
+        is_running = program in (
+            p.name() for p in psutil.process_iter(attrs=['name'])
+        )
+    except Exception:
+        is_running = False
+    return is_running

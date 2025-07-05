@@ -10,7 +10,7 @@ if True:  # Makes flake8 shut up
     pyqt_utils.init_app("ut-dr-save-manager", __file__)
 
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent
+from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent, QKeyEvent
 from PyQt6.QtWidgets import (QApplication, QDialog, QFileDialog,
                              QListWidgetItem, QMainWindow, QMenu, QMessageBox,
                              QWidget)
@@ -28,6 +28,8 @@ from .paths import (BACKUP_PATH, DELTARUNE_SAVES_PATH, PREMADE_PATH,
 try:
     from .ui.about_ui import Ui_About
     from .ui.create_ui import Ui_Create
+    from .ui.playlist_runner_ui import Ui_PlaylistRunner
+    from .ui.playlists_ui import Ui_Playlists
     from .ui.window_ui import Ui_MainWindow
 except ImportError:
     log(
@@ -88,7 +90,28 @@ def get_default_deltarune_save_path() -> str:
             return ""
 
 
-DEFAULT_CONFIG: dict[str, str | int | float | bool | list[str]] = {
+def get_default_undertale_proc_name() -> str:
+    match system():
+        case "Linux":
+            return "runner"
+        case "Windows":
+            return "UNDERTALE.exe"
+        case _:
+            return ""
+
+
+def get_default_deltarune_proc_name() -> str:
+    match system():
+        case "Linux":
+            return "DELTARUNE.exe"
+        case "Windows":
+            return "DELTARUNE.exe"
+        case _:
+            return ""
+
+
+DEFAULT_CONFIG: dict[str, bool | str | list[str] | dict[str, list[str]]] = {
+    "first_startup": True,
     "theme": "",
     "undertale_file_path": "",
     "deltarune_file_path": "",
@@ -96,6 +119,9 @@ DEFAULT_CONFIG: dict[str, str | int | float | bool | list[str]] = {
     "deltarune_save_path": get_default_deltarune_save_path(),
     "deltarune_saves": [],
     "undertale_saves": [],
+    "playlists": {},
+    "undertale_proc_name": get_default_undertale_proc_name(),
+    "deltarune_proc_name": get_default_deltarune_proc_name(),
 }
 
 
@@ -143,6 +169,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         QTimer.singleShot(
             0, lambda: self.resize(self.width(), self.height() + 50)
         )
+        if get_config_value("first_startup"):
+            set_config_value("first_startup", False)
+            self.import_all_premade_saves()
 
     def updateUi(self) -> None:
         self.undertaleSavePath.setText(get_config_value("undertale_save_path"))
@@ -331,7 +360,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
             self.create_save(folder, game)
 
     def open_playlists(self) -> None:
-        pass  # TODO this and pre-made SAVES
+        dialog = PlaylistsDialog(self, get_config_value("playlists"))
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            set_config_value("playlists", dialog.playlists_d)
 
     def open_about(self) -> None:
         dialog = About(self)
@@ -457,7 +488,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         model.copy_undertale_save(selected, undertale_save_path)
         show_info(
             self, "SAVE Applied",
-            f"Your UNDERTALE SAVE '{selected}' was applied."
+            f"Your UNDERTALE SAVE '{selected}' was applied.\n\n"
+            "This overwrote your previous SAVE file. If this was an accident, "
+            "you can recover your SAVE by clicking on 'Open Backup Folder'.",
         )
 
     def apply_deltarune(self) -> None:
@@ -484,7 +517,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         model.copy_deltarune_save(selected, deltarune_save_path)
         show_info(
             self, "SAVE Applied",
-            f"Your deltarune SAVE '{selected}' was applied."
+            f"Your deltarune SAVE '{selected}' was applied.\n\n"
+            "This overwrote your previous SAVE file. If this was an accident, "
+            "you can recover your SAVE by clicking on 'Open Backup Folder'.",
         )
 
     def delete_undertale(self) -> None:
@@ -512,6 +547,317 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         ) == QMessageBox.StandardButton.Yes:
             model.delete_deltarune_save(selected)
             self.updateUi()
+
+
+class PlaylistsDialog(QDialog, Ui_Playlists):  # type: ignore[misc]
+    def __init__(
+        self,
+        parent: QWidget | None = None,
+        playlists: dict[str, list[str]] = {},
+    ) -> None:
+        super().__init__(parent)
+        self.playlists_d = playlists
+        self.playlists_to_items: dict[str, QListWidgetItem] = {}
+        self.selected_playlist: str | None = None
+        self.setupUi(self)
+        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.updateUi()
+        self.connectSignalsSlots()
+
+    def updateUi(self) -> None:
+        self.utProcName.setText(get_config_value("undertale_proc_name"))
+        self.drProcName.setText(get_config_value("deltarune_proc_name"))
+        list_items = [
+            self.playlists.item(i).text()  # type: ignore[union-attr]
+            for i in range(self.playlists.count())
+        ]
+        if list(self.playlists_d.keys()) != list_items:
+            self.playlists_to_items.clear()
+            self.playlists.clear()
+            for playlist in self.playlists_d.keys():
+                item = QListWidgetItem(playlist)
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
+                self.playlists.addItem(item)
+                self.playlists_to_items[playlist] = item
+        self.undertaleCombo.blockSignals(True)
+        self.deltaruneCombo.blockSignals(True)
+        self.undertaleCombo.clear()
+        self.deltaruneCombo.clear()
+        for save in [""] + model.get_undertale_saves():
+            self.undertaleCombo.addItem(save)
+        for save in [""] + model.get_deltarune_saves():
+            self.deltaruneCombo.addItem(save)
+        self.undertaleCombo.setCurrentIndex(0)
+        self.deltaruneCombo.setCurrentIndex(0)
+        self.undertaleCombo.blockSignals(False)
+        self.deltaruneCombo.blockSignals(False)
+        if not self.selected_playlist:
+            self.savesList.clear()
+            self.savesList.setDisabled(True)
+            self.undertaleCombo.setDisabled(True)
+            self.deltaruneCombo.setDisabled(True)
+        else:
+            self.savesList.clear()
+            self.savesList.setDisabled(False)
+            self.undertaleCombo.setDisabled(False)
+            self.deltaruneCombo.setDisabled(False)
+            for save in self.playlists_d.get(self.selected_playlist, []):
+                self.savesList.addItem(save)
+
+    def connectSignalsSlots(self) -> None:
+        self.playlists.itemChanged.connect(self.playlist_renamed)
+        self.createPlaylist.clicked.connect(self.create_playlist)
+        self.delPlaylist.clicked.connect(self.delete_playlist)
+        self.playlists.itemSelectionChanged.connect(
+            self.playlist_selection_changed
+        )
+        self.delSave.clicked.connect(self.remove_save)
+        self.moveUp.clicked.connect(self.move_save_up)
+        self.moveDown.clicked.connect(self.move_save_down)
+        self.undertaleCombo.currentTextChanged.connect(self.add_save)
+        self.deltaruneCombo.currentTextChanged.connect(self.add_save)
+        self.playSteam.clicked.connect(partial(self.play_playlist, True))
+        self.playFile.clicked.connect(partial(self.play_playlist, False))
+        self.utProcName.textChanged.connect(
+            lambda: set_config_value(
+                "undertale_proc_name", self.utProcName.text()
+            )
+        )
+        self.drProcName.textChanged.connect(
+            lambda: set_config_value(
+                "deltarune_proc_name", self.drProcName.text()
+            )
+        )
+
+    def play_playlist(self, steam: bool) -> None:
+        if not self.selected_playlist:
+            return
+        if not self.playlists_d.get(self.selected_playlist):
+            show_error(
+                self, "No SAVES in playlist",
+                f"The playlist '{self.selected_playlist}' is empty."
+            )
+            return
+        if not (ut_save_path := get_config_value("undertale_save_path")):
+            show_error(
+                self, "No UNDERTALE SAVE path set",
+                "Please configure the UNDERTALE SAVE path first."
+            )
+            return
+        if not (dr_save_path := get_config_value("deltarune_save_path")):
+            show_error(
+                self, "No deltarune SAVE path set",
+                "Please configure the deltarune SAVE path first."
+            )
+            return
+        ut_fp = ""
+        dr_fp = ""
+        if not steam and (
+            not (ut_fp := get_config_value("undertale_file_path"))
+            or not (dr_fp := get_config_value("deltarune_file_path"))
+        ):
+            show_error(
+                self, "No UNDERTALE or deltarune file path set",
+                "Please configure the UNDERTALE and deltarune file paths "
+                "first."
+            )
+            return
+        if not (ut_proc_name := get_config_value("undertale_proc_name")):
+            show_error(
+                self, "No UNDERTALE process name set",
+                "Please configure the UNDERTALE process name first."
+            )
+            return
+        if not (dr_proc_name := get_config_value("deltarune_proc_name")):
+            show_error(
+                self, "No deltarune process name set",
+                "Please configure the deltarune process name first."
+            )
+            return
+        dialog = PlaylistRunnerDialog(
+            self.selected_playlist,
+            self.playlists_d[self.selected_playlist].copy(),
+            ut_proc_name,
+            dr_proc_name,
+            ut_save_path,
+            dr_save_path,
+            steam,
+            ut_fp,
+            dr_fp,
+            self,
+        )
+        dialog.exec()
+
+    def add_save(self, save: str) -> None:
+        if not save:
+            return  # Nothing selected
+        if not self.selected_playlist:
+            return
+        self.playlists_d[self.selected_playlist].append(save)
+        self.updateUi()
+
+    def remove_save(self) -> None:
+        try:
+            selected = self.savesList.selectedIndexes()[0].row()
+        except IndexError:
+            return
+        if not self.selected_playlist:
+            return
+        self.playlists_d[self.selected_playlist].pop(selected)
+        self.updateUi()
+
+    def move_save_up(self) -> None:
+        try:
+            selected = self.savesList.selectedItems()[0]
+        except IndexError:
+            return
+        if not self.selected_playlist:
+            return
+        index = self.savesList.row(selected)
+        if index > 0:
+            self.playlists_d[self.selected_playlist].insert(
+                index - 1, selected.text()
+            )
+            self.playlists_d[self.selected_playlist].pop(index + 1)
+            self.updateUi()
+
+    def move_save_down(self) -> None:
+        try:
+            selected = self.savesList.selectedItems()[0]
+        except IndexError:
+            return
+        if not self.selected_playlist:
+            return
+        index = self.savesList.row(selected)
+        if index < len(self.playlists_d[self.selected_playlist]) - 1:
+            self.playlists_d[self.selected_playlist].insert(
+                index + 2, selected.text()
+            )
+            self.playlists_d[self.selected_playlist].pop(index)
+            self.updateUi()
+
+    def playlist_renamed(self, item: QListWidgetItem) -> None:
+        prev_name = reverse_lookup(self.playlists_to_items, item)
+        if prev_name is None:
+            return
+        new_name = item.text().strip()
+        if not new_name or new_name.lower() in (
+            *map(str.lower, model.get_undertale_saves()),
+            *map(str.lower, model.get_deltarune_saves()),
+        ):
+            item.setText(prev_name)
+        else:
+            item.setText(new_name)
+            if prev_name in self.playlists_d:
+                self.playlists_d[new_name] = self.playlists_d.pop(prev_name)
+        self.updateUi()
+
+    def create_playlist(self) -> None:
+        self.playlists_d["New Playlist"] = []
+        self.updateUi()
+
+    def delete_playlist(self) -> None:
+        try:
+            selected = self.playlists.selectedItems()[0].text()
+        except IndexError:
+            return
+        if show_question(
+            self, "TRULY ERASE IT?",
+            f"Do you really want to delete the playlist '{selected}'?",
+        ) == QMessageBox.StandardButton.Yes:
+            if selected in self.playlists_d:
+                del self.playlists_d[selected]
+                self.updateUi()
+
+    def playlist_selection_changed(self) -> None:
+        try:
+            self.selected_playlist = self.playlists.selectedItems()[0].text()
+        except IndexError:
+            self.selected_playlist = None
+        self.updateUi()
+
+
+class PlaylistRunnerDialog(QDialog, Ui_PlaylistRunner):  # type: ignore[misc]
+    def __init__(
+        self,
+        playlist_name: str,
+        playlist: list[str],
+        ut_proc_name: str,
+        dr_proc_name: str,
+        ut_save_path: Path | str,
+        dr_save_path: Path | str,
+        steam: bool,
+        ut_file_path: Path | str = "",
+        dr_file_path: Path | str = "",
+        parent: QWidget | None = None,
+    ) -> None:
+        if not steam and (not ut_file_path or not dr_file_path):
+            raise ValueError(
+                "If steam is False, ut_file_path and dr_file_path must be set."
+            )
+        super().__init__(parent)
+        self.playlist_name = playlist_name
+        self.playlist = playlist
+        self.ut_proc_name = ut_proc_name
+        self.dr_proc_name = dr_proc_name
+        self.ut_save_path = ut_save_path
+        self.dr_save_path = dr_save_path
+        self.steam = steam
+        self.ut_file_path = ut_file_path
+        self.dr_file_path = dr_file_path
+        self.current_save: str = ""
+        self.play_cooldown: float = 0.0
+        self.setupUi(self)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_play)
+        self.timer.setInterval(100)
+        self.timer.start()
+        self.update_play()
+        self.updateUi()
+        self.connectSignalsSlots()
+
+    def updateUi(self) -> None:
+        self.displayPlaylist.setText(self.playlist_name)
+        self.displayCurSave.setText(self.current_save)
+        self.displayNextSave.setText(self.playlist[0] if self.playlist else "")
+        self.displayRemaining.setText(str(len(self.playlist)))
+
+    def connectSignalsSlots(self) -> None:
+        self.cancelBtn.clicked.connect(self.close)
+
+    def update_play(self) -> None:
+        self.play_cooldown -= self.timer.interval() / 1000.0
+        if (
+            model.program_running(self.ut_proc_name)
+            or model.program_running(self.dr_proc_name)
+            or self.play_cooldown > 0.0
+        ):
+            return
+        if not self.playlist:
+            self.close()
+            return
+        save = self.current_save = self.playlist.pop(0)
+        self.updateUi()
+        if save in model.get_undertale_saves():
+            model.copy_undertale_save(save, self.ut_save_path)
+            if self.steam:
+                model.launch_steam_ut()
+            else:
+                model.launch_file(self.ut_file_path)
+            self.play_cooldown = 10.0
+        elif save in model.get_deltarune_saves():
+            model.copy_deltarune_save(save, self.dr_save_path)
+            if self.steam:
+                model.launch_steam_dr()
+            else:
+                model.launch_file(self.dr_file_path)
+            self.play_cooldown = 10.0
+
+    def keyPressEvent(self, a0: QKeyEvent | None) -> None:
+        if a0 and a0.key() == Qt.Key.Key_Escape:
+            a0.ignore()
+        else:
+            super().keyPressEvent(a0)
 
 
 class CreateDialog(QDialog, Ui_Create):  # type: ignore[misc]
