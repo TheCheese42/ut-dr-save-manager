@@ -258,26 +258,26 @@ You should do this whenever you changed something in the currently active SAVE (
           <item>
            <widget class="QPushButton" name="applyUndertale">
             <property name="toolTip">
-             <string>Apply the selected UNDERTALE SAVE so the game will load it on next launch (Ctrl+U+Return).</string>
+             <string>Apply the selected UNDERTALE SAVE so the game will load it on next launch (Ctrl+Return).</string>
             </property>
             <property name="text">
              <string>Apply Selected</string>
             </property>
             <property name="shortcut">
-             <string>Ctrl+U, Ctrl+Return</string>
+             <string>Ctrl+Return</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="deleteUndertale">
             <property name="toolTip">
-             <string>Delete the selected UNDERTALE SAVE (Ctrl+U+Del).</string>
+             <string>Delete the selected UNDERTALE SAVE (Ctrl+Del).</string>
             </property>
             <property name="text">
              <string>Delete Selected</string>
             </property>
             <property name="shortcut">
-             <string>Ctrl+U, Ctrl+Del</string>
+             <string>Ctrl+Del</string>
             </property>
            </widget>
           </item>
@@ -311,26 +311,26 @@ You should do this whenever you changed something in the currently active SAVE (
           <item>
            <widget class="QPushButton" name="applyDeltarune">
             <property name="toolTip">
-             <string>Apply the selected deltarune SAVE so the game will load it on next launch (Ctrl+D+Return).</string>
+             <string>Apply the selected deltarune SAVE so the game will load it on next launch (Ctrl+Return).</string>
             </property>
             <property name="text">
              <string>Apply Selected</string>
             </property>
             <property name="shortcut">
-             <string>Ctrl+D, Ctrl+Return</string>
+             <string>Ctrl+Shift+Return</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="deleteDeltarune">
             <property name="toolTip">
-             <string>Delete the selected deltarune SAVE (Ctrl+D+Del).</string>
+             <string>Delete the selected deltarune SAVE (Ctrl+Shift+Del).</string>
             </property>
             <property name="text">
              <string>Delete Selected</string>
             </property>
             <property name="shortcut">
-             <string>Ctrl+D, Ctrl+Del</string>
+             <string>Ctrl+Shift+Del</string>
             </property>
            </widget>
           </item>
@@ -525,14 +525,14 @@ Not required if you choose to launch via Steam.</string>
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuImportPremadSave">
+    <widget class="QMenu" name="menuImportPremadeSave">
      <property name="title">
-      <string>Enable pre-made SAVE</string>
+      <string>Import pre-made SAVE</string>
      </property>
     </widget>
     <addaction name="actionImportUTSave"/>
     <addaction name="actionImportDRSave"/>
-    <addaction name="menuImportPremadSave"/>
+    <addaction name="menuImportPremadeSave"/>
     <addaction name="separator"/>
     <addaction name="actionQuit_2"/>
    </widget>

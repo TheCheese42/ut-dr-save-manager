@@ -22,7 +22,8 @@ from pyqt_utils.utils import open_url
 from pyqt_utils.version import version_string
 
 from . import model
-from .paths import BACKUP_PATH, DELTARUNE_SAVES_PATH, UNDERTALE_SAVES_PATH
+from .paths import (BACKUP_PATH, DELTARUNE_SAVES_PATH, PREMADE_PATH,
+                    UNDERTALE_SAVES_PATH)
 
 try:
     from .ui.about_ui import Ui_About
@@ -162,8 +163,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
             self.saves_to_items_dr[save] = item
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
             self.deltaruneSavesList.addItem(item)
+        self.menuImportPremadeSave.clear()
+        ia: QAction = self.menuImportPremadeSave.addAction("Import all")  # type: ignore[assignment]  # noqa
+        ia.triggered.connect(partial(self.import_all_premade_saves, None))
+        for game in PREMADE_PATH.iterdir():
+            game_menu: QMenu = self.menuImportPremadeSave.addMenu(game.name)  # type: ignore[assignment]  # noqa
+            ia: QAction = game_menu.addAction("Import all")  # type: ignore[assignment]  # noqa
+            ia.triggered.connect(
+                partial(self.import_all_premade_saves, game.name)
+            )
+            for category in game.iterdir():
+                if not category.is_dir():
+                    continue
+                cat_menu: QMenu = game_menu.addMenu(category.name)  # type: ignore[assignment]  # noqa
+                ia: QAction = cat_menu.addAction("Import all")  # type: ignore[assignment]  # noqa
+                ia.triggered.connect(
+                    partial(self.import_all_premade_saves, category.name)
+                )
+                for save in category.iterdir():
+                    if not save.is_dir():
+                        continue
+                    action: QAction = cat_menu.addAction(save.name)  # type: ignore[assignment]  # noqa
+                    action.triggered.connect(
+                        partial(
+                            self.create_save,
+                            save,
+                            (
+                                "undertale" if game.name.lower() == "undertale"
+                                else "deltarune"
+                            ),
+                            save.name,
+                        )
+                    )
 
         # Themes
+        self.menuTheme.clear()
         self.all_theme_actions: list[QAction] = []
         action: QAction = self.menuTheme.addAction("Default")  # type: ignore[assignment]  # noqa
         self.all_theme_actions.append(action)
@@ -183,6 +217,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
                 )
                 if style.name == configured_theme:
                     self.set_style(style.name, style.stylesheet)
+
+    def import_all_premade_saves(self, from_dir: str | None = None) -> None:
+        for game in PREMADE_PATH.iterdir():
+            if not game.is_dir():
+                continue
+            for category in game.iterdir():
+                if not category.is_dir():
+                    continue
+                for save in category.iterdir():
+                    if not save.is_dir():
+                        continue
+                    if (
+                        from_dir is None
+                        or from_dir == game.name
+                        or from_dir == category.name
+                    ):
+                        self.create_save(
+                            save,
+                            (
+                                "undertale" if game.name.lower() == "undertale"
+                                else "deltarune"
+                            ),
+                            save.name,
+                        )
 
     def set_style(self, name: str, stylesheet: str) -> None:
         self.setStyleSheet(stylesheet)
@@ -230,8 +288,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         self.undertaleSavesList.itemChanged.connect(
             partial(self.item_renamed, "undertale")
         )
+        self.undertaleSavesList.selectionChanged = (
+            lambda selected, deselected:
+            self.deltaruneSavesList.clearSelection()
+            if self.undertaleSavesList.selectedItems() else None
+        )
         self.deltaruneSavesList.itemChanged.connect(
             partial(self.item_renamed, "deltarune")
+        )
+        self.deltaruneSavesList.selectionChanged = (
+            lambda selected, deselected:
+            self.undertaleSavesList.clearSelection()
+            if self.deltaruneSavesList.selectedItems() else None
         )
         self.launchUTSteam.clicked.connect(model.launch_steam_ut)
         self.launchDRSteam.clicked.connect(model.launch_steam_dr)
@@ -348,9 +416,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
     def create_save(
         self, path: str | Path,
         game: Game | None = None,
+        name: str | None = None,
     ) -> None:
         create = CreateDialog(self, game)
-        if create.exec() == QDialog.DialogCode.Accepted:
+        if game and name:
+            if game == "undertale":
+                model.create_undertale_save(name, path)
+            else:
+                model.create_deltarune_save(name, path)
+            self.updateUi()
+        elif create.exec() == QDialog.DialogCode.Accepted:
             name = create.nameEdit.text()
             if create.undertaleRadio.isChecked():
                 model.create_undertale_save(name, path)
