@@ -3,7 +3,6 @@
 Save Manager for UNDERTALE and deltarune is a PyQt6 app. To run it, the following things need to be done:
 
 - Compile the UI to .py files
-- Compile the Icons to a resource.py file
 - Compile the external styles
 
 You can also compile an executable using nuitka, and a Windows Installer file using WiX.
@@ -58,7 +57,6 @@ python -m venv .venv  # At least Python 3.12
 source .venv/bin/activate
 pip install -r requirements.txt -r dev-requirements.txt
 pyqt-utils udsm --compile-ui  # Required
-pyqt-utils udsm --compile-icons  # Optional, otherwise no icons will be shown
 source scripts/compile-styles.sh  # Optional, otherwise only the default style will be available
 ```
 
@@ -109,8 +107,6 @@ python -m venv .venv  # At least Python 3.12
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r dev-requirements.txt
 pyqt-utils udsm --compile-ui  # Required
-Set-Alias -Name rcc -Value .\.venv\Lib\site-packages\qt6_applications\Qt\bin\rcc.exe  # Make the rcc.exe tool available
-pyqt-utils udsm --compile-icons  # Optional, otherwise no icons will be shown
 Set-Alias -Name lrelease -Value .\.venv\Lib\site-packages\qt6_applications\Qt\bin\lrelease.exe  # Make the lrelease.exe tool available
 .\scripts\compile-styles.ps1  # Optional, otherwise only the default style will be available
 ```
