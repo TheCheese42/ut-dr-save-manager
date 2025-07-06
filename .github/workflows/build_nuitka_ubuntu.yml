@@ -1,0 +1,54 @@
+name: Build UDSM using Nuitka (Linux)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          architecture: 'x64'
+          cache: 'pip'
+          cache-dependency-path: |
+            **/*requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y pyqt5-dev-tools qtchooser qttools5-dev-tools
+          sudo apt install -y patchelf ccache
+          pip install -r requirements.txt -r dev-requirements.txt
+      
+      - name: Compile Resources
+        run: |
+          pyqt-utils udsm --compile-ui
+          source scripts/compile-styles.sh
+
+      - name: Build Executable
+        run: |
+          pyqt-utils udsm --build-linux \
+            --build-data-dir udsm/premade_saves/=premade_saves/ \
+            --build-product-name "Save Manager for Undertale and Deltarune" \
+            --build-icon udsm/icons/icon.png
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }} Build
+          path: |
+            build/*.bin
+          include-hidden-files: true

@@ -1,0 +1,61 @@
+name: Build UDSM using Nuitka (Windows) + Windows Installer
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.1'
+          architecture: 'x64'
+          cache: 'pip'
+          cache-dependency-path: |
+            **/*requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt -r dev-requirements.txt
+      
+      - name: Compile Resources
+        run: |
+          pyqt-utils udsm --compile-ui
+          scripts/compile-styles.ps1
+
+      - name: Build Executable
+        run: |
+          pyqt-utils udsm --build-windows --build-data-dir \
+            .\udsm\premade_saves\=premade_saves\ \
+            --build-product-name "Save Manager for Undertale and Deltarune" \
+            --build-icon .\udsm\icons\icon.ico
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: | 
+            9.x.x
+
+      - name: Build Windows Installer
+        run: dotnet build
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }} Build
+          path: |
+            build/*.exe
+            bin/Debug/*.msi
+          include-hidden-files: true
