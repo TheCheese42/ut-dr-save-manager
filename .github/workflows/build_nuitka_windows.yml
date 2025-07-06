@@ -37,9 +37,9 @@ jobs:
 
       - name: Build Executable
         run: |
-          pyqt-utils udsm --build-windows --build-data-dir \
-            .\udsm\premade_saves\=premade_saves\ \
-            --build-product-name "Save Manager for Undertale and Deltarune" \
+          pyqt-utils udsm --build-windows --build-data-dir `
+            .\udsm\premade_saves\=premade_saves\ `
+            --build-product-name "Save Manager for Undertale and Deltarune" `
             --build-icon .\udsm\icons\icon.ico
 
       - name: Setup dotnet
