@@ -1,0 +1,58 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Save Manager for Undertale and Deltarune" Manufacturer="TheCheese" Version="0.2.0" UpgradeCode="2f45baba-a663-4d8f-801b-4dfd27a8bd83">
+    <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
+    <Feature Id="FilesFeature">
+      <ComponentGroupRef Id="Main" />
+    </Feature>
+    <Feature Id="ShortcutFeature" Title="Shortcuts" Level="1">
+      <ComponentGroupRef Id="ShortcutGroup" />
+    </Feature>
+    <Media Id="1" Cabinet="udsm.cab" EmbedCab="yes" />
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="!(bind.Property.ProductName)" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="Main" Directory="INSTALLFOLDER">
+      <Component>
+        <File Source="build\Save Manager for Undertale and Deltarune.exe" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="ShortcutGroup">
+      <Component Id="ApplicationShortcutDesktop" Guid="4bcdd370-4560-4340-9622-de37c735ab29" Directory="DesktopFolder">
+        <Shortcut Id="ApplicationDesktopShortcut"
+          Name="!(bind.Property.ProductName)"
+          Target="[INSTALLFOLDER]Save Manager for Undertale and Deltarune.exe"
+          WorkingDirectory="INSTALLFOLDER"/>
+        <RemoveFolder Id="DesktopFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU"
+          Key="Software\Save Manager for Undertale and Deltarune"
+          Name="installed"
+          Type="integer"
+          Value="1"
+          KeyPath="yes"/>
+      </Component>
+
+      <Component Id="ApplicationShortcutMenu" Guid="a18fd23d-4a28-4f2c-8944-becbec2d50b5" Directory="ProgramMenuFolder">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+          Name="!(bind.Property.ProductName)"
+          Target="[INSTALLFOLDER]Save Manager for Undertale and Deltarune.exe"
+          WorkingDirectory="INSTALLFOLDER"/>
+        <RemoveFolder Id="CleanUpShortCut" Directory="ProgramMenuFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU"
+          Key="Software\Save Manager for Undertale and Deltarune"
+          Name="installed"
+          Type="integer"
+          Value="1"
+          KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

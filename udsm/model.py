@@ -1,5 +1,4 @@
 import shutil
-import time
 from datetime import datetime
 from pathlib import Path
 from subprocess import getoutput
@@ -98,11 +97,15 @@ def open_backup_folder() -> None:
 
 
 def launch_steam_ut() -> None:
-    getoutput("steam steam://rungameid/391540")
+    thread = Thread(target=getoutput, args=("steam steam://rungameid/391540",))
+    thread.start()
 
 
 def launch_steam_dr() -> None:
-    getoutput("steam steam://rungameid/1671210")
+    thread = Thread(
+        target=getoutput, args=("steam steam://rungameid/1671210",)
+    )
+    thread.start()
 
 
 def _start_file_threaded(path: str | Path) -> None:
