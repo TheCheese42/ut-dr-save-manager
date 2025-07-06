@@ -29,7 +29,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y pyqt6-dev-tools qtchooser qttools5-dev-tools
+          sudo apt install -y pyqt5-dev-tools qtchooser qttools5-dev-tools
           sudo apt install -y patchelf ccache
           pip install -r requirements.txt -r dev-requirements.txt
       
