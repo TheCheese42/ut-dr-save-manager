@@ -553,8 +553,8 @@ Not required if you choose to launch via Steam.</string>
     <property name="title">
      <string>Act</string>
     </property>
-    <addaction name="actionHope"/>
-    <addaction name="actionDream"/>
+    <addaction name="actionTimeMachine"/>
+    <addaction name="actionSpamtonEditor"/>
    </widget>
    <widget class="QMenu" name="menuTheme">
     <property name="title">
@@ -580,14 +580,20 @@ Not required if you choose to launch via Steam.</string>
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionHope">
+  <action name="actionTimeMachine">
    <property name="text">
-    <string>Hope</string>
+    <string>Open UNDERTALE SAVE Editor</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the Flowey's Time Machine Save Editor to edit or create UNDERTALE SAVES.</string>
    </property>
   </action>
-  <action name="actionDream">
+  <action name="actionSpamtonEditor">
    <property name="text">
-    <string>Dream</string>
+    <string>Open deltarune SAVE Editor</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the Spamton Save Editor to edit or create deltarune SAVES.</string>
    </property>
   </action>
   <action name="actionAbout">

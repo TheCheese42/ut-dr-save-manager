@@ -338,11 +338,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
         self.launchDRFile.clicked.connect(
             partial(self.launch_file, "deltarune")
         )
-        self.actionHope.triggered.connect(
-            lambda: show_info(self, "...", "You hoped.")
+        self.actionTimeMachine.triggered.connect(
+            lambda: open_url(
+                "https://crumblingstatue.github.io/FloweysTimeMachine/"
+            )
         )
-        self.actionDream.triggered.connect(
-            lambda: show_info(self, "...", "You dreamed.")
+        self.actionSpamtonEditor.triggered.connect(
+            lambda: open_url("https://saveeditor.spamton.com/")
         )
         self.actionOpen_Playlists.triggered.connect(self.open_playlists)
         self.actionView_Licenses.triggered.connect(self.open_licenses)
