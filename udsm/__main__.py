@@ -10,7 +10,7 @@ if True:  # Makes flake8 shut up
     pyqt_utils.init_app("ut-dr-save-manager", __file__)
 
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent, QKeyEvent
+from PyQt6.QtGui import QAction, QDragEnterEvent, QDropEvent, QIcon, QKeyEvent
 from PyQt6.QtWidgets import (QApplication, QDialog, QFileDialog,
                              QListWidgetItem, QMainWindow, QMenu, QMessageBox,
                              QWidget)
@@ -22,8 +22,8 @@ from pyqt_utils.utils import open_url
 from pyqt_utils.version import version_string
 
 from . import model
-from .paths import (BACKUP_PATH, DELTARUNE_SAVES_PATH, PREMADE_PATH,
-                    UNDERTALE_SAVES_PATH)
+from .paths import (BACKUP_PATH, DELTARUNE_SAVES_PATH, ICONS_PATH,
+                    PREMADE_PATH, UNDERTALE_SAVES_PATH)
 
 try:
     from .ui.about_ui import Ui_About
@@ -174,6 +174,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):  # type: ignore[misc]
             self.import_all_premade_saves()
 
     def updateUi(self) -> None:
+        self.setWindowIcon(QIcon(str(ICONS_PATH / "icon.png")))
         self.undertaleSavePath.setText(get_config_value("undertale_save_path"))
         self.deltaruneSavePath.setText(get_config_value("deltarune_save_path"))
         self.undertaleFilePath.setText(get_config_value("undertale_file_path"))
@@ -567,6 +568,7 @@ class PlaylistsDialog(QDialog, Ui_Playlists):  # type: ignore[misc]
         self.connectSignalsSlots()
 
     def updateUi(self) -> None:
+        self.setWindowIcon(QIcon(str(ICONS_PATH / "icon.png")))
         self.utProcName.setText(get_config_value("undertale_proc_name"))
         self.drProcName.setText(get_config_value("deltarune_proc_name"))
         list_items = [
@@ -819,6 +821,7 @@ class PlaylistRunnerDialog(QDialog, Ui_PlaylistRunner):  # type: ignore[misc]
         self.connectSignalsSlots()
 
     def updateUi(self) -> None:
+        self.setWindowIcon(QIcon(str(ICONS_PATH / "icon.png")))
         self.displayPlaylist.setText(self.playlist_name)
         self.displayCurSave.setText(self.current_save)
         self.displayNextSave.setText(self.playlist[0] if self.playlist else "")
@@ -874,6 +877,7 @@ class CreateDialog(QDialog, Ui_Create):  # type: ignore[misc]
         self.connectSignalsSlots()
 
     def updateUi(self) -> None:
+        self.setWindowIcon(QIcon(str(ICONS_PATH / "icon.png")))
         if self.game == "undertale":
             self.undertaleRadio.setChecked(True)
         elif self.game == "deltarune":
@@ -917,6 +921,7 @@ class About(QDialog, Ui_About):  # type: ignore[misc]
 
     def setupUi(self, *args: Any, **kwargs: Any) -> None:
         super().setupUi(*args, **kwargs)
+        self.setWindowIcon(QIcon(str(ICONS_PATH / "icon.png")))
         self.versionDisplay.setText(version_string)
 
     def connectSignalsSlots(self) -> None:
