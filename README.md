@@ -5,15 +5,17 @@ I always enjoy playing through various UNDERTALE and deltarune boss fights and m
 Unfortunately, deltarune only supports 3 SAVE slots per chapter, UNDERTALE just one. This graphical tool helps with selecting save files,
 backing them up and launching the game.
 
+If there's a problem or you just have a question, either open an issue here on GitHub or contact me on Discord: `thecheese_knife`.
+
 ## Install
 
 Prebuilt executables are available for Linux and Windows. If you're on any of these platforms, go to the [latest release](https://github.com/TheCheese42/ut-dr-save-manager/releases/latest) and under "Assets", download the right file for your platform.
 
 Don't know which file to download?
 
-`udsm-linux-x86_64.bin` - This file is for Linux. Run it after enabling execute permissions.
-`udsm-win64-portable.exe` - This file is for Windows. You can not install it, just download and double click it in your file explorer.
-`udsm-win64.msi` - This file is for Windows. You can install it so the app is available on your Desktop and within your Start Menu (requires Administrator privileges).
+- `udsm-linux-x86_64.bin` - This file is for Linux. Run it after enabling execute permissions.
+- `udsm-win64-portable.exe` - This file is for Windows. You can not install it, just download and double click it in your file explorer.
+- `udsm-win64.msi` - This file is for Windows. You can install it so the app is available on your Desktop and within your Start Menu (requires Administrator privileges).
 
 > Note: On Windows you may get a Microsoft Defender security warning. There's nothing I can do about this, just try to ignore it. You may even have to exclude the file from the scan.
 
