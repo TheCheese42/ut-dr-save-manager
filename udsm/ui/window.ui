@@ -311,7 +311,7 @@ You should do this whenever you changed something in the currently active SAVE (
           <item>
            <widget class="QPushButton" name="applyDeltarune">
             <property name="toolTip">
-             <string>Apply the selected deltarune SAVE so the game will load it on next launch (Ctrl+Return).</string>
+             <string>Apply the selected deltarune SAVE so the game will load it on next launch (Ctrl+Shift+Return).</string>
             </property>
             <property name="text">
              <string>Apply Selected</string>
