@@ -605,8 +605,27 @@ class PlaylistsDialog(QDialog, Ui_Playlists):  # type: ignore[misc]
             self.savesList.setDisabled(False)
             self.undertaleCombo.setDisabled(False)
             self.deltaruneCombo.setDisabled(False)
+            all_saves = (
+                model.get_undertale_saves()
+                + model.get_deltarune_saves()
+            )
+            removed_saves = set()
             for save in self.playlists_d.get(self.selected_playlist, []):
+                if save not in all_saves:
+                    removed_saves.add(save)
+                    continue
                 self.savesList.addItem(save)
+            if removed_saves:
+                self.playlists_d[self.selected_playlist] = [
+                    save for save in self.playlists_d[self.selected_playlist]
+                    if save not in removed_saves
+                ]
+                show_error(
+                    self, "Removed SAVES",
+                    "The following SAVES are no longer available and were "
+                    "removed from the playlist:\n\n"
+                    f"{', '.join(removed_saves)}"
+                )
 
     def connectSignalsSlots(self) -> None:
         self.playlists.itemChanged.connect(self.playlist_renamed)
