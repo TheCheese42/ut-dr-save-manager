@@ -140,3 +140,7 @@ Install a recent [dotnet](https://dotnet.microsoft.com/en-us/download) version a
 ```pwsh
 dotnet build
 ```
+
+## MacOS
+
+If you really want to build for MacOS, you will need to figure most of it out by yourself. The Linux build guide may help you.
