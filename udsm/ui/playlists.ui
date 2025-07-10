@@ -60,6 +60,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QPushButton" name="createPlaylist">
+           <property name="toolTip">
+            <string>Create a new Playlist.</string>
+           </property>
            <property name="text">
             <string>Create</string>
            </property>
@@ -67,6 +70,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="delPlaylist">
+           <property name="toolTip">
+            <string>Delete the selected Playlist.</string>
+           </property>
            <property name="text">
             <string>Delete</string>
            </property>
@@ -131,6 +137,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QPushButton" name="delSave">
+           <property name="toolTip">
+            <string>Remove the selected SAVE from the current Playlist.</string>
+           </property>
            <property name="text">
             <string>Remove</string>
            </property>
@@ -138,6 +147,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="moveUp">
+           <property name="toolTip">
+            <string>Move the selected SAVE up.</string>
+           </property>
            <property name="text">
             <string>Move Up</string>
            </property>
@@ -145,6 +157,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="moveDown">
+           <property name="toolTip">
+            <string>Move the selected SAVE down.</string>
+           </property>
            <property name="text">
             <string>Move Down</string>
            </property>
@@ -203,6 +218,9 @@
            <height>0</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Select an UNDERTALE SAVE.</string>
+         </property>
         </widget>
        </item>
        <item>
@@ -235,6 +253,9 @@
            <width>150</width>
            <height>0</height>
           </size>
+         </property>
+         <property name="toolTip">
+          <string>Select a deltarune SAVE.</string>
          </property>
         </widget>
        </item>
@@ -283,6 +304,9 @@
            <height>0</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Run the Playlist by launching the games via Steam.</string>
+         </property>
          <property name="text">
           <string>Play (Steam)</string>
          </property>
@@ -296,6 +320,9 @@
            <height>0</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Run the Playlist by launching the executable files directly.</string>
+         </property>
          <property name="text">
           <string>Play (File)</string>
          </property>
@@ -305,6 +332,9 @@
      </item>
      <item>
       <widget class="QLineEdit" name="utProcName">
+       <property name="toolTip">
+        <string>The name of the UNDERTALE process.</string>
+       </property>
        <property name="placeholderText">
         <string>UNDERTALE Process</string>
        </property>
@@ -312,6 +342,9 @@
      </item>
      <item>
       <widget class="QLineEdit" name="drProcName">
+       <property name="toolTip">
+        <string>The name of the deltarune process.</string>
+       </property>
        <property name="placeholderText">
         <string>deltarune Process</string>
        </property>
