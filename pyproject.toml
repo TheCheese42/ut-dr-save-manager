@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "UT-DR-Save-Manager"
-version = "1.1.0"
+version = "1.1.1"
 authors = [{ name = "Dominik Reinartz", email = "dominik.reinartz@proton.me" }]
 description = "Graphical Save File Manager for Undertale and Deltarune."
 readme = "README.md"
