@@ -819,6 +819,7 @@ class PlaylistRunnerDialog(QDialog, Ui_PlaylistRunner):  # type: ignore[misc]
                 "If steam is False, ut_file_path and dr_file_path must be set."
             )
         super().__init__(parent)
+        self.should_cancel = False
         self.playlist_name = playlist_name
         self.playlist = playlist
         self.ut_proc_name = ut_proc_name
@@ -847,9 +848,15 @@ class PlaylistRunnerDialog(QDialog, Ui_PlaylistRunner):  # type: ignore[misc]
         self.displayRemaining.setText(str(len(self.playlist)))
 
     def connectSignalsSlots(self) -> None:
-        self.cancelBtn.clicked.connect(self.close)
+        def set_cancel_true():
+            self.should_cancel = True
+        self.cancelBtn.clicked.connect(set_cancel_true)
 
     def update_play(self) -> None:
+        if self.should_cancel:
+            self.timer.stop()
+            self.close()
+            return
         self.play_cooldown -= self.timer.interval() / 1000.0
         if (
             model.program_running(self.ut_proc_name)
@@ -858,6 +865,7 @@ class PlaylistRunnerDialog(QDialog, Ui_PlaylistRunner):  # type: ignore[misc]
         ):
             return
         if not self.playlist:
+            self.timer.stop()
             self.close()
             return
         save = self.current_save = self.playlist.pop(0)
