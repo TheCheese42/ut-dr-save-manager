@@ -851,6 +851,7 @@ class PlaylistRunnerDialog(QDialog, Ui_PlaylistRunner):  # type: ignore[misc]
         def set_cancel_true():
             self.should_cancel = True
         self.cancelBtn.clicked.connect(set_cancel_true)
+        self.close = lambda: set_cancel_true() or True
 
     def update_play(self) -> None:
         if self.should_cancel:
